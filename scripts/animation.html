@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+  </head>
+  
+  <body>
+    
+    <script>
+      
+	d3.csv("ecg_cvp.csv", function (data) { 
+			
+	var xScale = d3.scale.linear()
+		.domain([0, 10])
+		.range([0, 700]);
+		
+	var yScale = d3.scale.linear()
+		.domain([2, -1])
+		.range([0, 165]);
+		
+	var xAxis = d3.svg.axis()
+		.scale(xScale)
+		.orient("bottom");
+		
+	var yAxis = d3.svg.axis()
+		.scale(yScale)
+		.orient("left");
+	
+	var svg = d3.select("body").append("svg")
+		.attr("width", 900)
+		.attr("height", 200)
+		.append("g")
+		.attr("transform", "translate(30, 10)");
+	
+	var line = d3.svg.line()
+		.x(function (d) { return xScale(d.tm) })
+		.y(function (d) { return yScale(d.ECG) });
+		//.interpolate("linear");
+		
+	var graph = svg.append("path")
+			.attr("d", line(data))
+			.attr("fill", "none")
+			.attr("stroke", "#000")
+			.attr("stroke-width", 2)
+	
+	/*var graph = svg.selectAll("path")
+		.data([data])
+		.enter()
+			.append("path")
+			.attr("d", line)
+			.attr("fill", "none")
+			.attr("stroke", "#000")
+			.attr("stroke-width", 2)
+		.append("g")
+		.attr("transform", "translate(20, 0 )");*/
+			
+	svg.append("g")
+		.attr("transform","translate(20, 170)") 
+		.call(xAxis);
+	
+	svg.append("g")
+		.attr("transform", "translate(10, 0)")
+		.call(yAxis);
+	
+	var circle = svg.append("circle")
+		.attr("r", 6)
+		.attr("fill", "red")
+		.attr("transform", "translate(0,50)");
+		
+	function transition() {
+		circle.transition()
+			.duration(10000)
+			.attrTween("transform", translateAlong(graph.node()))
+			.each("end", transition);
+	}
+	
+	transition();
+	
+	function translateAlong(path) {
+		var l = path.getTotalLength();
+		return function(d, i, a) {
+			return function(t) {
+				var p = path.getPointAtLength(t * l);
+				return "translate(" + p.x + "," + p.y + ")";
+			};
+		};
+	}
+	
+
+	/*canvas.selectAll("circle")
+		.data(data)
+		.enter()
+			.append("circle")
+			.attr("cx", function (d) { return xScale(d.tm) })
+			.attr("cy", function (d) { return yScale(d.ECG) })
+			.attr("r", 1);
+	*/		
+	});
+      
+    </script>
+  </body>
+</html>
+
