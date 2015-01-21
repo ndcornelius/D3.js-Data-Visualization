@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: grey;
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+circle {
+  fill: darkorange;
+  stroke: darkorange;
+  stroke-width: 3px;
+}
+
+</style>
+
+<h1>Visualizing the relationship between ECG and CVP</h1>
+<p>This D3 visualization is created by Mahbubul Majumder. Data used from http://physionet.org </p>
+
+<div id="ecgplot"></div>
+<div id="cvpplot"></div>
+<body>
+<script src="http://d3js.org/d3.v3.js"></script>
+<script>
+
+var margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = 800 - margin.left - margin.right,
+    height = 120 - margin.top - margin.bottom;
+
+var parseDate = d3.time.format("%S").parse;
+
+var x = d3.scale.linear()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var line1 = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.ECG); });
+
+var line2 = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.CVP); });
+
+var svg1 = d3.select("#ecgplot").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var svg2 = d3.select("#cvpplot").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+d3.csv("ecg_cvp.csv", function(error, data) {
+  data.forEach(function(d) {
+    d.date = +d.tm;
+    d.ECG = +d.ECG;
+    d.CVP = +d.CVP;
+  });
+
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain(d3.extent(data, function(d) { return d.ECG; }));
+
+  svg1.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("transform", "rotate(0)")
+      .attr("y", 28)
+      .attr("x", 450)
+      .attr("dx", ".71em")
+      .style("text-anchor", "end")
+      .text("Time (in second)");
+  svg1.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", -35)
+      .attr("x", -35)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("ECG");
+
+  var path1 = svg1.append("path")
+      .datum(data)
+      .attr("class", "line")
+      .attr("d", line1);
+
+
+// drawing the CVP time series
+
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain(d3.extent(data, function(d) { return d.CVP; }));
+
+  svg2.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("transform", "rotate(0)")
+      .attr("y", 28)
+      .attr("x", 450)
+      .attr("dx", ".71em")
+      .style("text-anchor", "end")
+      .text("Time (in second)");
+  svg2.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", -35)
+      .attr("x", -35)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("CVP");
+
+  var path2 = svg2.append("path")
+      .datum(data)
+      .attr("class", "line")
+      .attr("d", line2);
+
+
+
+// Following codes are for moving a point along the path. 
+
+var circle1 = svg1.append("circle")
+    .attr("r", 3)
+    .attr("transform", "translate(" + data[0] + ")");
+
+function transition1() {
+  circle1.transition()
+      .duration(10000)
+      .attrTween("transform", translateAlong(path1.node()))
+//      .ease("out")
+      .each("end", transition1);
+}
+
+var circle2 = svg2.append("circle")
+    .attr("r", 3)
+    .attr("transform", "translate(" + data[0] + ")");
+
+function transition2() {
+  circle2.transition()
+      .duration(10000)
+      .attrTween("transform", translateAlong(path2.node()))
+//      .ease("out")
+      .each("end", transition2);
+}
+
+transition2();
+transition1();
+
+// Returns an attrTween for translating along the specified path element.
+function translateAlong(path) {
+  var l = path.getTotalLength();
+  return function(d, i, a) {
+    return function(t) {
+      var p = path.getPointAtLength(t * l);
+      return "translate(" + p.x + "," + p.y + ")";
+    };
+  return d3.interpolate(a, String(value.call(this, d, i)));
+  };
+}
+
+
+});
+
+</script>

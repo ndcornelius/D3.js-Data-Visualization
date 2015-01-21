@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: grey;
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+circle {
+  fill: darkorange;
+  stroke: darkorange;
+  stroke-width: 3px;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.js"></script>
+<script>
+
+var margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = 960 - margin.left - margin.right,
+    height = 150 - margin.top - margin.bottom;
+
+var parseDate = d3.time.format("%S").parse;
+
+var x = d3.scale.linear()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var line = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.close); });
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("ecg.csv", function(error, data) {
+  data.forEach(function(d) {
+    d.date = +d.tm;
+    d.close = +d.ECG;
+    d.close1 = +d.CVP;
+  });
+
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain(d3.extent(data, function(d) { return d.close; }));
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("transform", "rotate(0)")
+      .attr("y", 28)
+      .attr("x", 450)
+      .attr("dx", ".71em")
+      .style("text-anchor", "end")
+      .text("Time (in second)");
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", -35)
+      .attr("x", -45)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("ECG");
+
+  var path = svg.append("path")
+      .datum(data)
+      .attr("class", "line")
+      .attr("d", line);
+
+
+// Following codes are for moving a point along the path. 
+
+var circle = svg.append("circle")
+    .attr("r", 3)
+    .attr("transform", "translate(" + data[0] + ")");
+
+transition();
+
+function transition() {
+  circle.transition()
+      .duration(10000)
+      .attrTween("transform", translateAlong(path.node()))
+      .ease("linear")
+      .each("end", transition);
+}
+
+// Returns an attrTween for translating along the specified path element.
+function translateAlong(path) {
+  var l = path.getTotalLength();
+  return function(d, i, a) {
+    return function(t) {
+      var p = path.getPointAtLength(t * l);
+      return "translate(" + p.x + "," + p.y + ")";
+    };
+  return d3.interpolate(a, String(value.call(this, d, i)));
+  };
+}
+
+
+
+});
+
+</script>
