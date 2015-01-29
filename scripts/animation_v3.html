@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+	<link href="stylesheet.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+  </head>
+  
+  <body>
+  
+	<div id="upload">
+	<input type="file" accept=".csv" id="uploader">
+	</div>
+    <div id="animation">
+    <script>
+      
+     height = 150;
+	width = 800;
+      
+	d3.csv("ecg_cvp.csv", function (data) { 
+		drawGraph (data);
+	});
+
+	function drawGraph (data) {
+	
+	//var keys = d3.keys(data[0]);
+	
+	var time = { max: d3.max(data, function(d) {return +d.tm;} ), 
+				min: d3.min(data, function(d) {return +d.tm;} )}
+	var ecg = { max: d3.max(data, function(d) {return +d.ECG;} ), 
+				min: d3.min(data, function(d) {return +d.ECG;} )}
+	var cvp = { max: d3.max(data, function(d) {return +d.CVP;} ), 
+				min: d3.min(data, function(d) {return +d.CVP;} )}
+				
+	var duration = (time.max - time.min)*1000;
+	console.log(duration);
+	
+	
+	var timeScale = d3.scale.linear()
+		.domain([time.min, time.max])
+		.range([0, width - 50]);
+
+	var ecgScale = d3.scale.linear()
+		.domain([ecg.max, ecg.min])
+		.range([0, height - 40]);
+		
+	var cvpScale = d3.scale.linear()
+		.domain([cvp.max, cvp.min])
+		.range([0, height - 40]);
+		
+		
+		
+	var timeAxis = d3.svg.axis()
+		.scale(timeScale)
+		.orient("bottom");
+		
+	var ecgAxis = d3.svg.axis()
+		.scale(ecgScale)
+		.orient("left")
+		.ticks(5);
+		
+	var cvpAxis = d3.svg.axis()
+		.scale(cvpScale)
+		.orient("left")
+		.ticks(5);
+	
+	
+	
+	//function draw() {
+	var svg1 = d3.select("body").append("svg")
+		.attr("width", width)
+		.attr("height", height)
+		.append("g")
+		.attr("transform", "translate(50, 10)");
+	
+	var line1 = d3.svg.line()
+		.x(function (d) { return timeScale(d.tm) })
+		.y(function (d) { return ecgScale(d.ECG) });
+		//.interpolate("linear");
+		
+	var graph1 = svg1.append("path")
+			.attr("d", line1(data))
+			//.attr("fill", "none")
+			//.attr("stroke", "#000")
+			//.attr("stroke-width", 2)
+			.attr("class", "line");
+			
+	/*svg1.append("g")
+		.attr("transform","translate(20, 170)") 
+		.call(timeAxis); */
+	
+	svg1.append("g")
+		.attr("class", "y axis")
+		.attr("transform", "translate(0, 0)")
+		.call(ecgAxis);
+	
+	var circle1 = svg1.append("circle")
+		.attr("r", 6)
+		//.attr("fill", "red")
+		//.attr("transform", "translate(0,50)");
+		
+	function transition1() {
+		circle1.transition()
+			.duration(duration)
+			.ease("linear")
+			.attrTween("transform", translateAlong(graph1.node()))
+			.each("end", transition1);
+	}
+	
+	
+	
+	
+	
+	
+	var svg2 = d3.select("body").append("svg")
+		.attr("width", width)
+		.attr("height", height)
+		.append("g")
+		.attr("transform", "translate(50, 10)");
+	
+	var line2 = d3.svg.line()
+		.x(function (d) { return timeScale(d.tm) })
+		.y(function (d) { return cvpScale(d.CVP) });
+		//.interpolate("linear");
+		
+	var graph2 = svg2.append("path")
+			.attr("d", line2(data))
+		//	.attr("fill", "none")
+		//	.attr("stroke", "#000")
+		//	.attr("stroke-width", 2)
+			.attr("class", "line");
+			
+	svg2.append("g")
+		.attr("class", "x axis")
+		.attr("transform","translate(0," + (height - 30) +")") 
+		.call(timeAxis);
+	
+	svg2.append("g")
+		.attr("class", "y axis")
+		.attr("transform", "translate(0, 0)")
+		.call(cvpAxis);
+	
+	var circle2 = svg2.append("circle")
+		.attr("r", 6)
+		//.attr("fill", "red")
+		//.attr("transform", "translate(0,50)");
+		
+	function transition2() {
+		circle2.transition()
+			.duration(duration)
+			.ease("linear")
+			.attrTween("transform", translateAlong(graph2.node()))
+			.each("end", transition2);
+	}
+	//}
+	
+	var circle3 = svg2.append("circle")
+		.attr("r", 6)
+		.attr("cx", 0)
+		.attr("cy", height-30)
+		.attr("class", "marker");
+		
+	function transition3() {
+		circle3.transition()
+			.ease("linear")
+			.duration(duration)
+			.attr("cx", width-50)
+			.each("start", function() {circle3.attr("cx", 0);})
+			.each("end", transition3);
+	}
+	
+	transition1();
+	transition2();
+	transition3();
+	
+	
+	function translateAlong(path) {
+		var l = width-50;
+		return function(d, i, a) {
+			return function(t) {
+				var p = getPointAtX(t * l, path);
+				return "translate(" + p.x + "," + p.y + ")";
+			};
+		};
+	}
+	
+
+	};
+	
+	function getPointAtX(x, path, end) {
+		var beginning = x,  end = path.getTotalLength(), 
+			target, pos;
+		
+		while (true) {
+			
+			//console.log(end);
+		
+			target = Math.floor((beginning + end) / 2);
+			pos = path.getPointAtLength(target);
+			
+			if ((target === end || target === beginning) && pos.x !== x) {
+				return pos;
+			}
+			
+			if (pos.x > x)      end = target;
+			else if (pos.x < x) beginning = target;
+			else                return pos; //position found
+		}
+	}
+	
+	
+	
+	
+	
+	openFile("uploader");
+	
+	function loadData(csv) {
+		d3.csv("ecg_cvp.csv", function (data) { 
+		drawGraph (data);
+	});
+	}
+	// Code to open the user uploaded file using HTML5 FileReader
+	function openFile(element) {
+		var input = document.getElementById(element);
+		var reader = new FileReader();
+		
+		reader.onload = function(e) {
+			var text = e.target.result;
+			loadData(text);
+		}
+		
+		uploader.addEventListener("change", handleFile, false);
+		
+		function handleFile() {
+			var file = this.files[0];
+			reader.readAsText(file);
+		}
+	}
+	
+      
+    </script>
+    </div>
+  </body>
+</html>
+
