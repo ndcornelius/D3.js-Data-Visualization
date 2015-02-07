@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+	<link href="stylesheet.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+	<meta charset="UTF-8">
+  </head>
+  
+  <body>
+  
+	<div id="upload">
+	<input type="file" accept=".csv" id="uploader">
+	</div>
+    <div id="cvpplot">
+    <div id="ecgplot">
+	
+
+    <script>
+      
+    var height = 150;
+	var width = 800;
+	var margin = {top: 30, left: 50, right: 20, bottom: 30}
+      
+	d3.csv("ecg_cvp.csv", function (data) { 
+	
+		var keys = d3.keys(data[0]);
+		var entries = d3.entries(data);
+		
+		//for (var entry in entries) {
+			//console.log(keys[key]);
+			//}
+
+	
+		timeSeries(data, 0, 1, "ecgplot");
+		timeSeries(data, 0, 2, "cvpplot");
+		phasePlot(data, 1, 2, "twovarplot");
+	});
+
+	function timeSeries(data, a, b, label) {
+	
+		var keys = d3.keys(data[0]);
+	
+		var x = { max: d3.max( data, function(d) {return +d[keys[a]];}),
+					min: d3.min(data, function(d) {return +d[keys[a]];})}		
+								
+		var y = { max: d3.max(data, function(d) {return +d[keys[b]];}), 
+					min: d3.min(data, function(d) {return +d[keys[b]];})}
+					
+		var duration = 1000*(x.max-x.min);
+							
+		var xScale = d3.scale.linear()
+				.domain([x.min, x.max])
+				.range([0, width - margin.left - margin.right]);
+				
+		var yScale = d3.scale.linear()
+				.domain([y.max, y.min])
+				.range([0, height - margin.top - margin.bottom]);
+				
+		var xAxis = d3.svg.axis()
+					.scale(xScale)
+					.orient("bottom");
+					
+		var yAxis = d3.svg.axis()
+					.scale(yScale)
+					.orient("left")
+					.ticks(5);
+							
+		var svg = d3.select("#" + label).append("svg")
+			.attr("width", width)
+			.attr("height", height)
+			.append("g")
+			.attr("transform", "translate(50, 10)");
+			
+		var line = d3.svg.line()
+			.x(function (d) { return xScale(d[keys[a]])})
+			.y(function (d) { return yScale(d[keys[b]])});
+			
+		var plot = svg.append("path")
+			.attr("d", line(data))
+			.attr("class", "line");
+			
+		svg.append("g")
+			.attr("class", "y axis")
+			.attr("transform", "translate(0, 0)")
+			.call(yAxis);
+			
+		svg.append("g")
+			.attr("class", "x axis")
+			.attr("transform", "translate(0," + (height - 30) + ")")
+			.call(xAxis);
+			
+		var circle = svg.append("circle")
+			.attr("r", 6);
+			
+			
+		function transition() {
+			circle.transition()
+				.duration(duration)
+				.ease("linear")
+				.attrTween("transform", translateOver(plot.node()))
+				.each("end", transition);
+		}
+		
+		
+			
+		transition()
+	}
+	
+	/*var circle3 = svg2.append("circle")
+		.attr("r", 6)
+		.attr("cx", 0)
+		.attr("cy", height-30)
+		.attr("class", "marker");
+		
+	function transition3() {
+		circle3.transition()
+			.ease("linear")
+			.duration(duration)
+			.attr("cx", width-50)
+			.each("start", function() {circle3.attr("cx", 0);})
+			.each("end", transition3);
+	}
+
+	transition3();
+	*/
+
+	
+	
+		
+	
+	
+	
+	function phasePlot(data, a, b, label) {
+	
+		var keys = d3.keys(data[0]);
+	
+		var x = { max: d3.max( data, function(d) {return +d[keys[a]];}),
+					min: d3.min(data, function(d) {return +d[keys[a]];})}		
+								
+		var y = { max: d3.max(data, function(d) {return +d[keys[b]];}), 
+					min: d3.min(data, function(d) {return +d[keys[b]];})}
+					
+		var duration = 1000*(x.max-x.min);
+							
+		var xScale = d3.scale.linear()
+				.domain([x.min, x.max])
+				.range([0, 450]);
+				
+		var yScale = d3.scale.linear()
+				.domain([y.max, y.min])
+				.range([0, 450]);
+				
+		var xAxis = d3.svg.axis()
+					.scale(xScale)
+					.orient("bottom");
+					
+		var yAxis = d3.svg.axis()
+					.scale(yScale)
+					.orient("left");
+	
+		var svg = d3.select("body").append("div")
+			.attr( "id", "twovarplot")
+			.append("svg")
+				.attr("width", 500)
+				.attr("height", 500)
+				.append("g")
+				.attr("transform", "translate(50, 10)");
+				
+		svg.append("g")
+			.attr("class", "y axis")
+			.attr("transform", "translate(0, 0)")
+			.call(yAxis);
+			
+		svg.append("g")
+			.attr("class", "x axis")
+			.attr("transform", "translate(0," + (450) + ")")
+			.call(xAxis);
+		
+		var line = d3.svg.line()
+			.x(function(d) { return xScale(d[keys[a]]); })
+			.y(function(d) { return yScale(d[keys[b]]); });
+		
+		var path =  svg.append("path")
+		  .datum(data)
+		  .attr("class", "line")
+		  .attr("d", line);
+		  
+		 var circle = svg.append("circle")
+			.attr("r", 5)
+			.attr("transform", "translate(" + data[0] + ")");
+
+		function transition() {
+			circle.transition()
+				.duration(10000)
+				.attrTween("transform", translateAlong(path.node()))
+				.ease("linear")
+				.each("end", transition);
+		}
+				
+		transition();
+	}
+	
+	
+	
+	function translateAlong(path) {
+		var l = path.getTotalLength();
+		return function(d, i, a) {
+			return function(t) {
+				var p = path.getPointAtLength(l*t);
+				return "translate(" + p.x + "," + p.y + ")";
+			};
+		};
+	}
+	
+	function translateOver(path) {
+		var l = width-margin.left-margin.right;
+		return function(d, i, a) {
+			return function(t) {
+				var p = getPointAtX(t * l, path);
+				return "translate(" + p.x + "," + p.y + ")";
+			};
+		};
+	}
+	
+	
+	function getPointAtX(x, path) {
+		var beginning = x,  end = path.getTotalLength(), 
+			target, pos;
+		
+		while (true) {
+			
+			//console.log(end);
+		
+			target = Math.floor((beginning + end) / 2);
+			pos = path.getPointAtLength(target);
+			
+			if ((target === end || target === beginning) && pos.x !== x) {
+				return pos;
+			}
+			
+			if (pos.x > x)      end = target;
+			else if (pos.x < x) beginning = target;
+			else                return pos; //position found
+		}
+	}
+	
+	
+	
+	
+	openFile("uploader");
+	
+	function loadData(csv) {
+		d3.csv("ecg_cvp.csv", function (data) { 
+		drawGraph (data);
+		});
+	}
+	// Code to open the user uploaded file using HTML5 FileReader
+	function openFile(element) {
+		var input = document.getElementById(element);
+		var reader = new FileReader();
+		
+		reader.onload = function(e) {
+			var text = e.target.result;
+			loadData(text);
+		}
+		
+		uploader.addEventListener("change", handleFile, false);
+		
+		function handleFile() {
+			var file = this.files[0];
+			reader.readAsText(file);
+		}
+	}
+	
+      
+    </script>
+    </div>
+  </body>
+</html>
+
