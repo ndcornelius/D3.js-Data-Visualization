@@ -11,7 +11,8 @@
 	<div id="upload">
 	<input type="file" accept=".csv" id="uploader">
 	</div>
-    <div id="animation">
+    <div id="cvpplot">
+    <div id="ecgplot">
     <script>
       
      height = 150;
@@ -67,7 +68,7 @@
 	
 	
 	//function draw() {
-	var svg1 = d3.select("body").append("svg")
+	var svg1 = d3.select("#ecgplot").append("svg")
 		.attr("width", width)
 		.attr("height", height)
 		.append("g")
@@ -112,7 +113,7 @@
 	
 	
 	
-	var svg2 = d3.select("body").append("svg")
+	var svg2 = d3.select("#cvpplot").append("svg")
 		.attr("width", width)
 		.attr("height", height)
 		.append("g")
