@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+	<link href="stylesheet.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+	<meta charset="UTF-8">
+  </head>
+  
+  <body>
+  
+	<input type="file" accept=".csv" id="uploader">
+	<div id="upload"> </div>
+	
+
+    <script>
+      
+    var height = 150;
+	var width = 900;
+	var margin = {top: 30, left: 50, right: 20, bottom: 30}
+	
+	/*var svg1 = d3.select("body")
+						.append("div")
+						.attr("id", "svg1div")
+						.append("svg")
+						.attr("id", "svg1");*/
+      
+		// Default data display
+	d3.csv("ecg_cvp.csv", function (data) { 
+			// Get the values in the first column and assigns them to keys
+		var keys = d3.keys(data[0]);
+		//var entries = d3.entries(data);
+	
+		draw(data);
+	});
+	
+	function draw(data) {
+		var keys = d3.keys(data[0]);
+		
+		/*svg1.attr("height", 2 * height)
+				.attr("width", width);*/
+				
+		oneVarPlot(data, 0, 1, "plot2");
+		oneVarPlot(data, 0, 2, "plot1");
+		twoVarPlot(data, 0, 1, 2, "twovarplot");
+	}
+
+		// Function 
+	function oneVarPlot(data, a, b, label) {
+	
+		
+		var keys = d3.keys(data[0]);
+	
+		var x = { max: d3.max( data, function(d) {return +d[keys[a]];}),
+					min: d3.min(data, function(d) {return +d[keys[a]];})}		
+								
+		var y = { max: d3.max(data, function(d) {return +d[keys[b]];}), 
+					min: d3.min(data, function(d) {return +d[keys[b]];})}
+					
+		var duration = 1000*(x.max-x.min);
+							
+		var xScale = d3.scale.linear()
+				.domain([x.min, x.max])
+				.range([0, width - margin.left - margin.right]);
+				
+		var yScale = d3.scale.linear()
+				.domain([y.max, y.min])
+				.range([0, height - margin.top - margin.bottom]);
+				
+		var xAxis = d3.svg.axis()
+					.scale(xScale)
+					.orient("bottom");
+					
+		var yAxis = d3.svg.axis()
+					.scale(yScale)
+					.orient("left")
+					.ticks(5);
+		
+							
+		var svg = d3.select("body")
+			.attr("id", "label")
+			.append("svg")
+			.attr("width", width)
+			.attr("height", height)
+			.append("g")
+			.attr("transform", "translate(50, 10)");
+			
+		var line = d3.svg.line()
+			.x(function (d) { return xScale(d[keys[a]])})
+			.y(function (d) { return yScale(d[keys[b]])});
+			
+		var plot = svg.append("g")
+			.append("path")
+			.attr("d", line(data))
+			.attr("class", "line");
+			//.attr("transform", "translate(0," + (height*(number-1)) + ")");
+			
+		svg.append("g")
+			.attr("class", "y axis")
+			//.attr("transform", "translate(0," + (height*(number-1)) + ")")
+			.call(yAxis);
+			
+		svg.append("g")
+			.attr("class", "x axis")
+			.attr("transform", "translate(0," + (height-margin.bottom) + ")")
+			.call(xAxis);
+			
+		var circle = svg.append("circle")
+			.attr("r", 6);
+			
+			
+		function transition() {
+			circle.transition()
+				.duration(duration)
+				.ease("linear")
+				.attrTween("transform", translateOver(plot.node()))
+				.each("end", transition);
+		}
+		
+		transition();
+	}
+
+	
+	
+	function twoVarPlot(data, t, a, b, label) {
+	
+		var keys = d3.keys(data[0]);
+	
+		var x = { max: d3.max( data, function(d) {return +d[keys[a]];}),
+					min: d3.min(data, function(d) {return +d[keys[a]];})}		
+								
+		var y = { max: d3.max(data, function(d) {return +d[keys[b]];}), 
+					min: d3.min(data, function(d) {return +d[keys[b]];})}
+					
+		var t = { max: d3.max(data, function(d) {return +d[keys[t]];}), 
+					min: d3.min(data, function(d) {return +d[keys[t]];})}
+					
+		var duration = 1000*(t.max-t.min);
+							
+		var xScale = d3.scale.linear()
+				.domain([x.min, x.max])
+				.range([0, (width/2)]);
+				
+		var yScale = d3.scale.linear()
+				.domain([y.max, y.min])
+				.range([0, (width/2)]);
+				
+		var xAxis = d3.svg.axis()
+					.scale(xScale)
+					.orient("bottom");
+					
+		var yAxis = d3.svg.axis()
+					.scale(yScale)
+					.orient("left");
+	
+		var svg = d3.select("body").append("div")
+			.attr( "id", "twovarplot")
+			.append("svg")
+				.attr("width", 500)
+				.attr("height", 500)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+				
+		svg.append("g")
+			.attr("class", "y axis")
+			.attr("transform", "translate(0, 0)")
+			.call(yAxis);
+			
+		svg.append("g")
+			.attr("class", "x axis")
+			.attr("transform", "translate(0," + (width/2) + ")")
+			.call(xAxis);
+		
+		var line = d3.svg.line()
+			.x(function(d) { return xScale(d[keys[a]]); })
+			.y(function(d) { return yScale(d[keys[b]]); });
+		
+		var path =  svg.append("path")
+		  .datum(data)
+		  .attr("class", "line")
+		  .attr("d", line);
+		  
+		 var circle = svg.append("circle")
+			.attr("r", 5)
+			//.attr("transform", "translate(" + data[0] + ")");
+
+		function transition() {
+			circle.transition()
+				.duration(duration)
+				.attrTween("transform", translateOn(data, 1, 2))
+				.ease("linear")
+				.each("end", transition);
+		}
+				
+		transition();
+	}
+	
+	
+	function translateOn(data, u, v) {
+		var keys = d3.keys(data[0]);
+		
+		var scale = d3.scale.linear()
+			.domain([0, 1])
+			.range([0, data.length - 1]);
+			
+		var uScale = d3.scale.linear()
+			.domain([d3.min(data, function(d) {return +d[keys[u]]}),
+						d3.max(data, function(d) {return +d[keys[u]]})])
+			.range([0, (width/2)]);
+			
+		var vScale = d3.scale.linear()
+			.domain([d3.max(data, function(d) {return +d[keys[v]]}),
+						d3.min(data, function(d) {return +d[keys[v]]})])
+			.range([0, (width/2)]);
+			
+		var time, x, y, row;
+			
+		return function(d, i, a) {
+			return function(t) {
+				time = Math.floor(scale(t));
+				row = data[time];
+				x = uScale(row[keys[u]]);
+				y = vScale(row[keys[v]]);
+				
+				//console.log("(" + x +"," + y + ")");
+					
+				return "translate(" + x + "," + y + ")";
+				}
+			}
+	}
+	
+	
+	function translateAlong(data, u, v, time) {
+		keys = d3.keys(data[0]);
+		var timeScale = d3.scale.linear()
+			.domain([0, 1])
+			.range([d3.min(data, function(d) {return +d[keys[time]]}),
+						d3.max(data, function(d) {return +d[keys[time]]})]);
+		
+		//console.log(d3.min(data, function(d) { console.log(+d[keys[time]]); return +d[keys[time]]}));
+						
+		var uScale = d3.scale.linear()
+			.domain([d3.min(data, function(d) {return +d[keys[u]]}),
+						d3.max(data, function(d) {return +d[keys[u]]})])
+			.range([0, width]);
+			
+			console.log(uScale(0));
+			
+		var vScale = d3.scale.linear()
+			.domain([d3.min(data, function(d) {return +d[keys[v]]}),
+						d3.max(data, function(d) {return +d[keys[v]]})])
+			.range([0, height]);
+						
+		return function(d, i, a) {
+			return function(t) {
+				var transition_time = timeScale(t),
+					row = 1,
+					entry = data[row],
+					data_time = entry[keys[time]],
+					x, y;
+					
+					//console.log(transition_time);
+				
+				while ( 0.5 < Math.abs(transition_time - data_time)) {
+					row = row++;
+					entry = data[row];
+					data_time = entry[keys[time]];
+				}
+				x = uScale(entry[keys[u]]);
+				y = vScale(entry[keys[v]]);
+				
+				console.log(x);
+				console.log(y);
+				
+				return "translate(" + x + "," + y + ")";
+			};
+		};
+	}
+	
+	function translateOver(path) {
+		var l = width-margin.left-margin.right;
+		return function(d, i, a) {
+			return function(t) {
+				var p = getPointAtX(t * l, path);
+				return "translate(" + p.x + "," + p.y + ")";
+			};
+		};
+	}
+	
+		// Function to find the y value for a given x value. Only works on functions that don't have multiple y values for the same x value.
+	function getPointAtX(x, path) {
+		var beginning = x,  end = path.getTotalLength(), 
+			target, pos;
+		
+		while (true) {
+		
+			target = Math.floor((beginning + end) / 2);
+			pos = path.getPointAtLength(target);
+			
+			if ((target === end || target === beginning) && pos.x !== x) {
+				return pos;
+			}
+			
+			if (pos.x > x)      end = target;
+			else if (pos.x < x) beginning = target;
+			else                return pos; //position found
+		}
+	}
+	
+	
+	
+	
+	openFile("uploader");
+	
+	function loadData(csv) {
+		d3.csv("ecg_cvp.csv", function (data) { 		
+		d3.selectAll("svg").remove();
+		draw(data);
+		});
+	}
+	// Code to open the user uploaded file using HTML5 FileReader
+	function openFile(element) {
+		var input = document.getElementById(element);
+		var reader = new FileReader();
+		
+		reader.onload = function(e) {
+			var text = e.target.result;
+			loadData(text);
+		}
+		
+		uploader.addEventListener("change", handleFile, false);
+		
+		function handleFile() {
+			var file = this.files[0];
+			reader.readAsText(file);
+		}
+	}
+	
+      
+    </script>
+    <!--</div>-->
+  </body>
+</html>
+
