@@ -313,10 +313,9 @@
 	openFile("uploader");
 	
 	function loadData(csv) {
-		d3.csv("ecg_cvp.csv", function (data) { 		
+		var data = d3.csv.parse(csv) ;		
 		d3.selectAll("svg").remove();
 		draw(data);
-		});
 	}
 	// Code to open the user uploaded file using HTML5 FileReader
 	function openFile(element) {
@@ -339,4 +338,6 @@
       
     </script>
     <!--</div>-->
-  </b
+  </body>
+</html>
+
