@@ -72,12 +72,27 @@
 			
 		svg.append("g")
 			.attr("class", "y axis")
-			.call(yAxis);
+			.call(yAxis)
+			.append("text")
+				.attr("class", "axisLabel")
+			  .attr("transform", "rotate(-90)")
+			  .attr("y", -margin.left)
+			  .attr("x", -(height - margin.top - margin.bottom)/2)
+			  .attr("dy", ".71em")
+			  .style("text-anchor", "end")
+			  .text(keys[b]);;;
 			
 		svg.append("g")
 			.attr("class", "x axis")
-			.attr("transform", "translate(0," + (height-margin.bottom) + ")")
-			.call(xAxis);
+			.attr("transform", "translate(0," + (height-margin.bottom - margin.top) + ")")
+			.call(xAxis)
+			.append("text")
+			.attr("class", "axisLabel")
+			  .attr("y", margin.bottom)
+			  .attr("x", (width - margin.right - margin.left)/2)
+			  .attr("dy", ".71em")
+			  .style("text-anchor", "end")
+			  .text(keys[a]);;;
 			
 		var circle = svg.append("circle")
 			.attr("r", 6);
@@ -121,11 +136,13 @@
 				
 		var xAxis = d3.svg.axis()
 					.scale(xScale)
-					.orient("bottom");
+					.orient("bottom")
+					.ticks(7);
 					
 		var yAxis = d3.svg.axis()
 					.scale(yScale)
-					.orient("left");
+					.orient("left")
+					.ticks(7);
 	
 		var svg = d3.select("body").append("div")
 			.attr( "id", "twovarplot")
@@ -138,12 +155,28 @@
 		svg.append("g")
 			.attr("class", "x axis")
 			.attr("transform", "translate(0, 0)")
-			.call(yAxis);
+			.call(yAxis)
+			.append("text")
+				.attr("class", "axisLabel")
+			  .attr("transform", "rotate(-90)")
+			  .attr("y", -margin.left)
+			  .attr("x", -(plotWidth-margin.left-margin.right)/2)
+			  .attr("dy", ".71em")
+			  .style("text-anchor", "end")
+			  .text(keys[a]);
 			
 		svg.append("g")
 			.attr("class", "x axis")
 			.attr("transform", "translate(0," + (plotWidth - margin.top - margin.bottom) + ")")
-			.call(xAxis);
+			.call(xAxis)
+			.append("text")
+				.attr("class", "axisLabel")
+			  .attr("transform", "rotate(0)")
+			  .attr("y", margin.bottom)
+			  .attr("x", (plotWidth-margin.right-margin.left)/2)
+			  .attr("dx", ".71em")
+			  .style("text-anchor", "end")
+			  .text(keys[b]);
 		
 		var line = d3.svg.line()
 			.x(function(d) { return xScale(d[keys[a]]); })
@@ -153,6 +186,10 @@
 		  .datum(data)
 		  .attr("class", "line")
 		  .attr("d", line);
+		  
+		  
+		  
+		  
 		  
 		 var circle = svg.append("circle")
 			.attr("r", 5);

@@ -10,8 +10,9 @@ body {
 	shape-rendering: crispEdges;
 }
 
-.x.axis path {
-	display: none;
+.axisLabel {
+	font-size: 11px;
+	fill: #111;
 }
 
 .line {
@@ -32,6 +33,6 @@ circle {
 	stroke: #ccc;
 	stroke-width: 2px;
 }
-}
+
 
 
