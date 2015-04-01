@@ -18,7 +18,7 @@ body {
 .line {
 	fill: none;
 	stroke: #222;
-	stroke-width: 1.5px;
+	stroke-width: 1px;
 	shape-rendering: geometricPrecision;
 }
 
@@ -32,6 +32,10 @@ circle {
 	fill: #ccc;
 	stroke: #ccc;
 	stroke-width: 2px;
+}
+
+canvas {
+    border: solid 1px #777;
 }
 
 
