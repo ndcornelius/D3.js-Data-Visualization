@@ -11,11 +11,16 @@
   
   <body>
   
-	<input type="file" accept=".csv" id="uploader">
-	<div id="upload"> </div>
+      <h1>Data Visualization in 3 Dimensions</h1>
+	
+	<div id="upload"> 
+        <h3>Click <em>Browse</em> and select a .csv file. Click <em>Draw</em> to draw the data.</h3>
+        <input type="file" accept=".csv" id="uploader">
+       <button  name="submitButton" onClick="loadData()">Draw</button>
+    </div>
 	
 
     <script type="text/javascript" src="animation_v6.js"></script>
-    <!--</div>-->
+
   </body>
 </html>
