@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+	<link href="stylesheet.css" rel="stylesheet" type="text/css">
+	<script src="scripts/libs/three.min.js"></script>
+	<script src = "scripts/libs/TrackballControls.js"></script>
+	<script type="text/javascript" src="scripts/libs/d3.v3.min.js"></script>
+	<meta charset="UTF-8">
+  </head>
+  
+  <body>
+  
+      <h1>Data Visualization in 3 Dimensions</h1>
+	
+	<div id="upload"> 
+        <h3>Click <em>Browse</em> and select a .csv file. Click <em>Draw</em> to draw the data.</h3>
+        <input type="file" accept=".csv" id="uploader">
+       <button  name="submitButton" onClick="loadData()">Draw</button>
+    </div>
+	
+
+    <script type="text/javascript" src="scripts/animation_v6.js"></script>
+
+  </body>
+</html>

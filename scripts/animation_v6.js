@@ -57,6 +57,7 @@ function init() {
     
     camera2 = new THREE.PerspectiveCamera( 50, axesWidth / axesHeight, 1, 1000 );
     camera2.up = camera.up; // important!
+    
     camera.lookAt(new THREE.Vector3(0, 0, 50));
     
     d3.select("#axes3d")
@@ -177,7 +178,7 @@ function threeVarPlot(a, b, t ) {
     
     var scene = new THREE.Scene();
     var scene2 = new THREE.Scene();
-    scene.add(camera);
+    //scene.add(camera);
                                 
             var xScale = d3.scale.linear()
                     .domain(d3.extent( data, function(d) {return +d[keys[b]]}))
@@ -199,9 +200,9 @@ function threeVarPlot(a, b, t ) {
             for (var i=0; i<data.length; i++) {
             
                 var entry = data[i];
-                var p1 = tScale(entry[keys[0]]);
-                var p2 = xScale(entry[keys[1]]);
-                var p3 = yScale(entry[keys[2]]);
+                var p1 = tScale(entry[keys[t]]);
+                var p2 = xScale(entry[keys[b]]);
+                var p3 = yScale(entry[keys[a]]);
                 geometry.vertices.push(new THREE.Vector3(p1, p2, p3));
             }
         
@@ -282,7 +283,7 @@ function zoom(id, a, b) {
   
     // Default data display
 function initialData() {
-    d3.text("sin_cos.csv", function (csv) { 
+    d3.text("../data/sin_cos.csv", function (csv) { 
     
         previewData(csv)
         loadData();
@@ -305,6 +306,13 @@ function tabulate(data, keys) {
             .attr("class", "tableRow");
             
         row.append("div")
+            .attr("class", "limitedBox")
+                .append("input")
+                    .attr("type", "checkbox")
+                    .attr("onclick", "return validateChecks(this)")
+                    .attr("id", keys[i] + "box");
+            
+        row.append("div")
             .attr("class", "tableHead")
                 .append("p")
                     .text(keys[i]);
@@ -316,21 +324,35 @@ function tabulate(data, keys) {
             row.append("div")
             .attr("class", "tableCell")
                 .append("p")
-                    .text(Math.round(+entry[keys[i]] * 100000)/100000);
+                    .text(Math.round(+entry[keys[i]] * 100000)/100000); // Only limits decimal places
         }
     }  
 }
 
 function draw() {
     
-    console.log("draw");
+    var columns = [];
     
     markers = {};
+    
+    console.log("draw");
+    
+    for( var i=0; i<keys.length; i++) {
+        box = document.getElementById(keys[i] + "box");
+        if( box.checked) {
+            columns.push(i);
+        }
+    }
+    
+    if (columns.length == 0) {
+        columns = [0, 1, 2]
+    }
+    console.log(columns);
 
     plot("svg1", keys[0], keys[1], 1);
     plot("svg2", keys[0], keys[2], 1);
     plot("svg3", keys[1], keys[2], 2);
-    threeVarPlot(0, 1, 2);
+    threeVarPlot(columns[0], columns[1], columns[2]);
     
     time = d3.extent(data, function(d) {return +d[keys[0]]});
     duration = (+time[1] - +time[0]) * 1000;
@@ -490,6 +512,8 @@ function previewData(csv) {
     d3.select("#dataTable")
         .remove();
         
+    checksCount = 0;
+        
     fileData = d3.csv.parse(csv);
     fileKeys = d3.keys(fileData[0]);
         
@@ -498,6 +522,8 @@ function previewData(csv) {
 }
 
 function loadData() {
+    
+    console.log("load data");
         		
     data = fileData;
     keys = fileKeys;
@@ -521,6 +547,24 @@ function openFile(element) {
     function handleFile() {
         var file = this.files[0];
         reader.readAsText(file);
+    }
+}
+
+
+var checksCount = 0;
+function validateChecks(box) 
+{
+    if (!box.checked) {
+        checksCount--;
+        console.log(checksCount);
+    }
+    else {
+        checksCount++;
+        if (checksCount > 3)
+        {
+            checksCount--;
+            box.checked = false;
+        }
     }
 }
 

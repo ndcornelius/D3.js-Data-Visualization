@@ -1,0 +1,91 @@
+<html>
+	<head>
+	</head>
+	<body>
+		<script src="three.min.js"></script>
+		<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+		<script>
+			 renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
+			camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
+			camera.position.set(0, 0, 100);
+			camera.lookAt(new THREE.Vector3(0, 0, 0));
+			scene = new THREE.Scene();
+			
+			
+			d3.csv("ecg_cvp.csv", function (data) { 
+				makeCurve(data);
+			});
+			
+			function makeCurve(data) {
+				
+				var keys = d3.keys(data[0]);
+				
+				var x = { max: d3.max( data, function(d) {return +d[keys[1]];}),
+					min: d3.min(data, function(d) {return +d[keys[1]];})}		
+								
+				var y = { max: d3.max(data, function(d) {return +d[keys[2]];}), 
+							min: d3.min(data, function(d) {return +d[keys[2]];})}
+							
+				var t = { max: d3.max(data, function(d) {return +d[keys[0]];}), 
+							min: d3.min(data, function(d) {return +d[keys[0]];})}
+									
+				var xScale = d3.scale.linear()
+						.domain([x.min, x.max])
+						.range([-10, 10]);
+						
+				var yScale = d3.scale.linear()
+						.domain([y.max, y.min])
+						.range([-20, 20]);
+						
+				var tScale = d3.scale.linear()
+						.domain([t.max, t.min])
+						.range([-50, 50]);
+						
+				var geometry = new THREE.Geometry();
+				 var material = new THREE.LineBasicMaterial({
+					color: 0x4682b4
+				});
+				for (var i=0; i<data.length; i++) {
+				
+					var entry = data[i];
+					var p1 = tScale(entry[keys[0]]);
+					var p2 = xScale(entry[keys[1]]);
+					var p3 = yScale(entry[keys[2]]);
+					geometry.vertices.push(new THREE.Vector3(p1, p2, p3));
+				}
+			
+				var line = new THREE.Line(geometry, material);
+				scene.add(line);
+				
+				renderer.render(scene, camera);
+				
+				//var points = [];
+
+				/*for ( var i=0; i<data.length; i++) {
+					points.push(new THREE.Vector3(tScale(data[keys[0]]), xScale(data[keys[1]]), yScale(data[keys[2]])));
+				}
+				
+								
+				var spline = new THREE.SplineCurve3(points);
+				var geometry = new THREE.Geometry();
+				geometry.vertices = spline.getPoints( 50 );
+
+				var material = new THREE.LineBasicMaterial( { color : 0x00ff00 } );
+
+				//Create the final Object3d to add to the scene
+				var line = new THREE.Line( geometry, material );
+				
+				scene.add(line);*/
+				
+			}
+			
+			/*function render() {
+				requestAnimationFrame( render );
+				renderer.render( scene, camera );
+			}
+			//render();*/
+		</script>
+	</body>
+</html>
