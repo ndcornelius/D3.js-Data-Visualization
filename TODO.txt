@@ -1,0 +1,6 @@
+May 13, 2015 at 3PM
+
+1. Animation on 2D phase plot as well as on time series as we had before
+2. the axis label should be as the column name
+3. Should be able to select some dots and color them as we wish
+4. Color the scatter plot based on some class available in a column
