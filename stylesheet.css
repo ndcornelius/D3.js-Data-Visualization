@@ -73,6 +73,14 @@ circle {
 #uploader {
     display: inline;
     margin: 10px;
+
+}
+#dataPreview{
+    width: 400px;
+    max-height: 400px;
+    overflow: auto;
+    border: solid 1px #DDD;
+    
 }
 #plot3d,
 #upload {

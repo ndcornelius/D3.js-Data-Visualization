@@ -6,6 +6,7 @@
 	<script src="scripts/libs/three.min.js"></script>
 	<script src = "scripts/libs/TrackballControls.js"></script>
 	<script type="text/javascript" src="scripts/libs/d3.v3.min.js"></script>
+    <script src="scripts/libs/helvetiker_regular.typeface.js"></script>
 	<meta charset="UTF-8">
   </head>
   
@@ -14,10 +15,14 @@
       <h1>Data Visualization in 3 Dimensions</h1>
 	
 	<div id="upload"> 
-        <h3>Click <em>Browse</em> and select a .csv file. Click <em>Draw</em> to draw the data.</h3>
+        <h3>Click <em>Browse</em> and select a .csv file. Click <em>Line</em>  or <em>Scatter</em> to draw the data.</h3>
         <input type="file" accept=".csv" id="uploader">
-       <button  name="submitButton" onClick="loadData()">Draw</button>
+       <button  name="submitButton" onClick="loadData(0)">Line</button>
+       <button name="ScatterPlotButton" onClick="loadData(1)">Scatter</button>
+       <!--<div id="dataPreview"><\div>-->
     </div>
+    <!--<div id="3dViz"><\div>
+    <div id="2dViz"><\div>-->
 	
 
     <script type="text/javascript" src="scripts/animation_v6.js"></script>
