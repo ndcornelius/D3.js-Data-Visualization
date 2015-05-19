@@ -2,20 +2,24 @@
 <html>
 
   <head>
-	<link href="stylesheet.css" rel="stylesheet" type="text/css">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    
+	<link href="css/stylesheet.css" rel="stylesheet" type="text/css">
 	<script src="scripts/libs/three.min.js"></script>
 	<script src = "scripts/libs/TrackballControls.js"></script>
 	<script type="text/javascript" src="scripts/libs/d3.v3.min.js"></script>
     <script src="scripts/libs/helvetiker_regular.typeface.js"></script>
-	<meta charset="UTF-8">
   </head>
   
   <body>
-  
+    <div class="header">
       <h1>Data Visualization in 3 Dimensions</h1>
-	
+	</div>
 	<div id="upload"> 
-        <h3>Click <em>Browse</em> and select a .csv file. Click <em>Line</em>  or <em>Scatter</em> to draw the data.</h3>
+        <p>Click <em>Browse</em> and select a .csv file. Click <em>Line</em>  or <em>Scatter</em> to draw the data.</p>
         <input type="file" accept=".csv" id="uploader">
        <button  name="submitButton" onClick="loadData(0)">Line</button>
        <button name="ScatterPlotButton" onClick="loadData(1)">Scatter</button>
