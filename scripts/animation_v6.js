@@ -1,4 +1,5 @@
 
+
 /*var dataViz = {
     
     viz3d : {
@@ -24,7 +25,7 @@
         height: 0,
         width: 0,
         margin: {},
-        markers,
+        anmations,
         init,
         plot;
         
@@ -32,6 +33,7 @@
     
     data,
     keys;
+    scales
     
 }*/
 
@@ -39,7 +41,7 @@
 var height, width, margin;
 var height3, width3;
 var data, keys, renderer, camera, container, fileData, renderer2, camera2, container2;
-var markers;
+var anmations;
 //var duration, stop;
 
 
@@ -211,29 +213,23 @@ function plot(id, x, y, variables) {
 
 }
 
-function ThreeDScatterPlot(a, b, t) {
+function threeDScatterPlot(x, y, z) {
     
     var scene = new THREE.Scene();
     var axisScene = new THREE.Scene();
     //scene.add(camera);
                                 
     var xScale = d3.scale.linear()
-            .domain(d3.extent( data, function(d) {return +d[keys[b]]}))
+            .domain(d3.extent( data, function(d) {return +d[keys[x]]}))
             .range([-15, 15]);
-            
-    console.log(d3.extent( data, function(d) {return +d[keys[b]]}))
             
     var yScale = d3.scale.linear()
-            .domain(d3.extent( data, function(d) {return +d[keys[t]]}).reverse())
+            .domain(d3.extent( data, function(d) {return +d[keys[y]]}).reverse())
             .range([-15, 15]);
-            
-     console.log(d3.extent( data, function(d) {return +d[keys[b]]}))
-            
+    
     var tScale = d3.scale.linear()
-            .domain(d3.extent( data, function(d) {return +d[keys[a]]}).reverse())
+            .domain(d3.extent( data, function(d) {return +d[keys[z]]}).reverse())
             .range([-15, 15]);
-            
-     console.log(d3.extent( data, function(d) {return +d[keys[b]]}))
             
     
     var material = new THREE.MeshBasicMaterial({
@@ -245,9 +241,9 @@ function ThreeDScatterPlot(a, b, t) {
     for (var i=0; i<data.length; i++) {
         var circle = new THREE.Mesh( geometry, material );
         var entry = data[i];
-        circle.position.y = tScale(entry[keys[t]]);
-        circle.position.x = xScale(entry[keys[b]]);
-        circle.position.z = yScale(entry[keys[a]]);
+        circle.position.y = tScale(entry[keys[y]]);
+        circle.position.x = xScale(entry[keys[x]]);
+        circle.position.z = yScale(entry[keys[z]]);
         scene.add(circle)
     }
     
@@ -287,7 +283,7 @@ function ThreeDScatterPlot(a, b, t) {
     
 }
 
-function threeVarPlot(a, b, t ) {
+function threeDLinePlot(a, b, t ) {
     
     var scene = new THREE.Scene();
     var scene2 = new THREE.Scene();
@@ -330,61 +326,6 @@ function threeVarPlot(a, b, t ) {
     
     axis = new THREE.AxisHelper( 100 );
     scene2.add( axis );
-    
-        //Add axis labels ...
-    function addAxisLabels () {
-    
-        var  textGeo = new THREE.TextGeometry('X', {
-            size: 15,
-            height: 2,
-            curveSegments: 6,
-            font: "helvetiker",
-            style: "normal"
-
-        });
-        var  color = new THREE.Color();
-        color.setRGB(0, 0, 0);
-        var  textMaterial = new THREE.MeshBasicMaterial({ color: color });
-        var  text = new THREE.Mesh(textGeo , textMaterial);
-
-        text.position.x = 100;
-        text.position.y = 0;
-        text.position.z = 0;
-        text.rotation = camera2.rotation;
-        scene2.add(text);
-        
-        textGeo = new THREE.TextGeometry('Y', {
-            size: 15,
-            height: 2,
-            curveSegments: 6,
-            font: "helvetiker",
-            style: "normal"
-
-        });
-        text = new THREE.Mesh(textGeo , textMaterial);
-
-        text.position.x = 0;
-        text.position.y = 100;
-        text.position.z = 0;
-        text.rotation = camera2.rotation;
-        scene2.add(text);
-        
-        textGeo = new THREE.TextGeometry('Z', {
-            size: 15,
-            height: 2,
-            curveSegments: 6,
-            font: "helvetiker",
-            style: "normal"
-
-        });
-        text = new THREE.Mesh(textGeo , textMaterial);
-
-        text.position.x = 0;
-        text.position.y = 0;
-        text.position.z = 100;
-        text.rotation = camera2.rotation;
-        scene2.add(text);
-    }
     
     function render() {
         renderer.render(scene, camera);
@@ -481,7 +422,7 @@ function tabulate(data, maxLength) {
     var keys = d3.keys(data[0]);
     var tableData = [];
     
-    maxLength =  (maxLength < data.length) ? maxLength : data.length;
+    maxLength =  (maxLength < data.length) ? maxLength : data.length; // Sets the maximum number of values to display to the length of the data if it is shorter than maxlength
     
     var table = d3.select("#keys")
         .append("div")
@@ -501,10 +442,12 @@ function tabulate(data, maxLength) {
                     .attr("type", "checkbox")
                     .attr("onclick", "return validateChecks(this)")
                     .attr("id", keys[i] + "box");
+
             
         row.append("div")
             .attr("class", "tableHead")
                 .append("p")
+                    .attr("id", "t" + keys[i])
                     .text(keys[i]);
         
         for(var j=0; j<maxLength; j++) {
@@ -519,16 +462,28 @@ function tabulate(data, maxLength) {
     }  
 }
 
+var color = 0;
+function dataColor () {
+    colors = ["blue", "green", "red"]
+    console.log(color);
+    return colors[color]
+}
+
 function draw(x) {
+    
+    color = 0;
     
     var columns = [];
     
-    markers = {};
+    anmations = {};
     
     for( var i=0; i<keys.length; i++) {
         box = document.getElementById(keys[i] + "box");
         if( box.checked) {
             columns.push(i);
+            d3.select("#t" + keys[i])
+                .style("color", dataColor());
+            color++;
         }
     }
     
@@ -541,7 +496,7 @@ function draw(x) {
     plot("svg2", keys[0], keys[2], 1);
     plot("svg3", keys[1], keys[2], 2);
     
-    x === 0 ? threeVarPlot(columns[0], columns[1], columns[2]) : ThreeDScatterPlot(columns[0], columns[1], columns[2]);
+    x === 0 ? threeDLinePlot(columns[0], columns[1], columns[2]) : threeDScatterPlot(columns[0], columns[1], columns[2]);
     
     time = d3.extent(data, function(d) {return +d[keys[0]]});
     duration = (+time[1] - +time[0]) * 1000;
@@ -550,13 +505,13 @@ function draw(x) {
         duration = 10000 
     }
     
-    /*transitionElement("svg1", 0, 1, duration, 170, 900);
+    transitionElement("svg1", 0, 1, duration, 170, 900);
     transitionElement("svg2", 0, 2, duration, 170, 900);
     transitionElement("svg3", 1, 2, duration, 400, 400);
     
-    for (var i in markers) { 
-        markers[i]();
-    }*/
+    for (var i in anmations) { 
+        anmations[i]();
+    }
 
     
     /*zoom("svg1", 0, 1);
@@ -564,67 +519,13 @@ function draw(x) {
     zoom("svg3", 1, 2);*/
 }
 
-/*
-function transitionElement( id, a, b, duration) {
-    
-    var svg = d3.select("#" + id)
-    
-    var height = svg.style("height")
-    var width = svg.style("width")
-    
-    var circle = svg.append("circle")
-        //.attr("class", "marker")
-        .attr("id", id + "marker")
-        .attr("r", 6);
-        
-    function transition() {
-        circle.interrupt().transition()
-            .duration(duration)
-            .attrTween("transform", translateOn( a, b, height, width))
-            .ease("linear")
-            .each("end", transition);
-    }
-    
-    transition()
-    
-}
-
-function translateOn(u, v, height, width) {
-    
-    var time, x, y, row;
-    
-    var scale = d3.scale.linear()
-        .domain([0, 1])
-        .range([0, data.length - 1]);
-        
-    var uScale = d3.scale.linear()
-        .domain(d3.extent(data, function(d) {return +d[keys[u]]}))
-        .range([0, width -margin.left-margin.right]);
-        
-    var vScale = d3.scale.linear()
-        .domain(d3.extent(data, function(d) {return +d[keys[v]]}).reverse())
-        .range([0, height - margin.top - margin.bottom]);
-    
-    return function (d, i, a) {
-        return function (t) {
-            time = Math.floor(scale(t));
-            row = data[time];
-            x = uScale(row[keys[u]]);
-            y = vScale(row[keys[v]]);
-            
-            return "translate(" + x + "," + y + ")";
-        }
-    }
-}*/
 
 function transitionElement( id, a, b, duration, height, width) {
     
     // Init calculate scales and return negative y?
     
     var svg = d3.select("#" + id)
-    
-    //var height = svg.style("height")
-    //var width = svg.style("width")
+   
     
     var circle = svg.append("circle")
         //.attr("class", "marker")
@@ -639,40 +540,51 @@ function transitionElement( id, a, b, duration, height, width) {
         .domain(d3.extent(data, function(d) {return +d[keys[a]]}))
         .range([0, width -margin.left-margin.right]);
         
-        //console.log(height);
-        
     var bScale = d3.scale.linear()
         .domain(d3.extent(data, function(d) {return +d[keys[b]]}).reverse())
         .range([0, height - margin.top - margin.bottom]);
         
-    function transition () {
+    var pathArray = constructPathArray(a, b, aScale, bScale);
         
-        /*if (stop) { return ;
-        console.log("returned out of transition");}
-        else {*/
+    function transition () {
             circle.interrupt().transition()
                 .duration(duration)
-                .attrTween("transform", translateOn(a, b, transitionScale, aScale, bScale))
+                .attrTween("transform", translateOn(transitionScale, pathArray))
                 .ease("linear")
                 .each("end", transition);
-        //}
     }
-    function markersLength () { 
+    function anmationsLength () { 
         var t = 0;
-        for (var i in markers) { 
+        for (var i in anmations) { 
             t++; 
         }
         return t;
     }
 
-    markers["t" + markersLength()] = transition;
+    anmations["t" + anmationsLength()] = transition;
     //transition()
     
 }
 
-function translateOn(u, v, scale, uScale, vScale) {
+function constructPathArray(u, v, uScale, vScale) {
     
-    var time, x, y, row;
+    pathArray = [];
+    
+    for (var i=0; i<data.length; i++) {
+        row = data[i]
+        pathArray.push({
+            x: uScale(row[keys[u]]),
+            y: vScale(row[keys[v]])
+        })
+    }
+    
+    return pathArray;
+    
+}
+
+function translateOn(scale, pathArray) {
+    
+    var time, row;
     
     
     return function(d, i, a) {
@@ -682,12 +594,9 @@ function translateOn(u, v, scale, uScale, vScale) {
             if ( typeof data[time] === 'undefined' ) {
                 return "translate(0, 0)";
             }
-            row = data[time];
-            x = uScale(row[keys[u]]);
-            y = vScale(row[keys[v]]);
-            //console.log(x);
+            row = pathArray[time];
             
-            return "translate(" + x + "," + y + ")";
+            return "translate(" + row.x + "," + row.y + ")";
         }
     }
 }
